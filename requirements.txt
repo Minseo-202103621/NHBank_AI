@@ -1,0 +1,12 @@
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-dotenv==1.0.1
+pydantic==2.5.3
+pydantic-settings==2.1.0
+sqlalchemy==2.0.29
+openai==1.14.2
+PyPDF2==3.0.1
+python-multipart==0.0.9
+langchain==0.1.0
+chromadb==0.4.17
+tiktoken==0.5.1

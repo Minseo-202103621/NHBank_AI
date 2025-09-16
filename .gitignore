@@ -1,0 +1,21 @@
+# Environments
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+app.db
+storage/chroma/
+
+# Node (for frontend)
+frontend/node_modules/
+frontend/dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

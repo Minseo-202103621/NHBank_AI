@@ -1,0 +1,9 @@
+# Glossary of key regulatory terms used in the judge outputs.
+
+# This file can map shorthand codes used by the model to full Korean
+# explanations or internal codes.  Extend it as your taxonomy grows.
+
+불완전판매: "고객에게 중요한 정보를 충분히 제공하지 않고 금융상품을 판매하는 행위"
+이해상충: "직무 수행 중 개인의 이익과 고객 또는 회사의 이익이 충돌하는 상황"
+개인정보 유출: "개인 식별 정보가 허가되지 않은 사람에게 노출되는 사건"
+배임/횡령: "회사의 자산을 부정하게 사용하거나 빼돌리는 행위"

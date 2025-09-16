@@ -1,0 +1,24 @@
+# Skeleton rubric for LLM‑as‑a‑Judge.
+
+# This file defines how severity levels and recommended actions should be
+# interpreted.  Adjust these values based on the organisation’s risk
+# appetite, regulatory obligations and operational procedures.  The
+# structure is YAML so that it can be loaded easily into the judge chain.
+
+severity:
+  0:
+    label: "배임 횡령 위험 아님"
+    description: "사건이 규정 위반을 구성하지 않으며 후속 조치가 필요하지 않습니다."
+    actions: ["해당 없음"]
+  1:
+    label: "배임 횡령 의심(주의 요망)"
+    description: "경미한 위반 가능성이 있으므로 모니터링 및 예방 교육이 필요합니다."
+    actions: ["교육", "모니터링"]
+  2:
+    label: "배임 횡령(조사 필요)"
+    description: "중대한 위반 의심 사례로 조사 및 적절한 시정 조치가 필요합니다."
+    actions: ["조사", "시정"]
+  3:
+    label: "배임 횡령 즉시 처분 필요"
+    description: "즉각적인 조치(감사, 고발 등)가 필요한 심각한 위반 사례입니다."
+    actions: ["감사", "고발"]
