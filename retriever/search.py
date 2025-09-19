@@ -52,20 +52,50 @@ class RAGRetriever:
         settings = get_settings()
         persist_directory = settings.chroma_persist_directory
         
+        print(f"[DEBUG] Initializing vector store from: {persist_directory}")
+
         if os.path.exists(persist_directory):
+            print("[DEBUG] Loading existing ChromaDB from disk.")
             self.vectorstore = Chroma(
                 persist_directory=persist_directory,
                 embedding_function=self.embeddings
             )
+            print("[DEBUG] ChromaDB loaded successfully.")
         else:
+            print("[DEBUG] No existing ChromaDB found. Creating a new one.")
             documents = self._load_documents()
-            self.vectorstore = Chroma(
-                collection_name="bank_whistle",
-                persist_directory=persist_directory,
-                embedding_function=self.embeddings
-            )
-            self.vectorstore.add_documents(documents)
-            self.vectorstore.persist()
+            print(f"[DEBUG] Loaded {len(documents)} document chunks from jsonl.")
+            if not documents:
+                print("[ERROR] No documents to index. The database will be empty.")
+                self.vectorstore = None
+                return
+
+            print("[DEBUG] Creating new ChromaDB instance...")
+            try:
+                self.vectorstore = Chroma(
+                    collection_name="bank_whistle",
+                    persist_directory=persist_directory,
+                    embedding_function=self.embeddings
+                )
+                print("[DEBUG] Adding documents and creating embeddings. This may take a moment...")
+                self.vectorstore.add_documents(documents)
+                print("[DEBUG] New ChromaDB created and documents added.")
+            except Exception as e:
+                print(f"[ERROR] An exception occurred during ChromaDB creation/embedding: {e}")
+                import traceback
+                traceback.print_exc()
+                self.vectorstore = None
+
+        if self.vectorstore:
+            try:
+                count = self.vectorstore._collection.count()
+                print(f"[DEBUG] Vector store initialized. Number of documents in collection: {count}")
+                if count == 0:
+                    print("[WARNING] The vector store is empty. Searches will not find any results.")
+            except Exception as e:
+                print(f"[ERROR] Could not get document count from vector store: {e}")
+        else:
+            print("[ERROR] Vector store initialization failed.")
 
     def _load_documents(self) -> List[Document]:
         """Load documents from the JSONL index file."""
@@ -78,13 +108,12 @@ class RAGRetriever:
             for line in f:
                 try:
                     record = json.loads(line)
+                    # Pass the original filename from doc_id to the metadata source
                     doc = Document(
                         page_content=record["text"],
                         metadata={
-                            "source": record.get("source", ""),
-                            "title": record.get("title", ""),
+                            "source": record.get("doc_id", ""), # Use doc_id as the source
                             "section": record.get("section", ""),
-                            "page": record.get("page", 0)
                         }
                     )
                     documents.append(doc)
@@ -93,14 +122,21 @@ class RAGRetriever:
                     
         return documents
 
-    async def search(self, query: str, k: int = 5) -> List[SearchResult]:
+    async def search(self, query: str, k: int = 5, doc_id: Optional[str] = None) -> List[SearchResult]:
         """Search for relevant documents using semantic similarity."""
         if not self.vectorstore:
             return []
-            
+
+        search_kwargs = {
+            'k': k,
+            'score_threshold': 0.0
+        }
+        if doc_id:
+            search_kwargs['filter'] = {'source': doc_id}
+        
         results = self.vectorstore.similarity_search_with_relevance_scores(
             query=query,
-            k=k
+            **search_kwargs
         )
         
         search_results = []
@@ -121,25 +157,36 @@ class RAGRetriever:
             
         chunks = self.text_splitter.split_documents(documents)
         self.vectorstore.add_documents(chunks)
-        self.vectorstore.persist()
 
-    def get_context(self, query: str, max_tokens: int = 2000) -> str:
+    async def get_context(self, query: str, doc_id: Optional[str] = None, max_tokens: int = 2000) -> str:
         """Get formatted context string from search results."""
-        results = self.vectorstore.similarity_search_with_relevance_scores(query, k=3)
+        results = await self.search(query=query, doc_id=doc_id)
+        
+        num_results = len(results)
         
         context_parts = []
-        current_tokens = 0
+        total_tokens = 0
         
-        for doc, score in results:
-            if current_tokens >= max_tokens:
+        for result in results:
+            result_tokens = len(result.content.split())
+            if total_tokens + result_tokens > max_tokens:
                 break
-                
-            context = f"\n출처: {doc.metadata.get('source', '')}\n"
-            context += f"관련도: {score:.2f}\n"
-            context += f"내용: {doc.page_content}\n"
-            
-            # Rough token estimate
-            current_tokens += len(context) / 3
+            context = f"\n출처: {result.source}\n"
+            context += f"관련도: {result.score:.2f}\n"
+            context += f"내용: {result.content}\n"
             context_parts.append(context)
+            total_tokens += result_tokens
             
-        return "\n".join(context_parts)
+        real_context = "\n".join(context_parts)
+        
+        debug_wrapper = (
+            f"--- DEBUG START ---\n"
+            f"Search found {num_results} results.\n"
+            f"The generated context is:\n"
+            f"vvvvvvvvvvvvvvvvvvvv\n"
+            f"{real_context}\n"
+            f"^^^^^^^^^^^^^^^^^^^^\n"
+            f"--- DEBUG END ---\n"
+        )
+        
+        return debug_wrapper

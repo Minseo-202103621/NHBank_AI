@@ -75,7 +75,7 @@ async def chat_message(request: ChatRequest) -> ChatResponse:
     if not orchestrator:
         raise HTTPException(status_code=500, detail="Orchestrator not initialized")
 
-    message, ready_for_judgment = await orchestrator.process_message(
+    message = await orchestrator.process_message(
         request.conversation_id,
         request.message
     )
@@ -83,7 +83,7 @@ async def chat_message(request: ChatRequest) -> ChatResponse:
     return ChatResponse(
         conversation_id=request.conversation_id,
         message=message,
-        ready_for_judgment=ready_for_judgment
+        ready_for_judgment=False # This is now handled by user prompt
     )
 
 @app.post("/chat/upload")

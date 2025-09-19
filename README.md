@@ -33,7 +33,10 @@ cp .env.example .env
 .env 파일을 열고 OPENAI_API_KEY 값을 입력하세요.
 
 2. 의존성 설치
-bash
+
+**권장 Python 버전: 3.11**
+
+```bash
 pip install -r requirements.txt
 3. 규정 인덱스 생성
 data/ 폴더 안에 분석할 내부 규정 PDF 파일들을 위치시킵니다.
