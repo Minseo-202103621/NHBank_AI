@@ -134,10 +134,12 @@ class RAGRetriever:
         if doc_id:
             search_kwargs['filter'] = {'source': doc_id}
         
+        print(f"[DEBUG] Searching ChromaDB with query: '{query}' and kwargs: {search_kwargs}")
         results = self.vectorstore.similarity_search_with_relevance_scores(
             query=query,
             **search_kwargs
         )
+        
         
         search_results = []
         for doc, score in results:
@@ -179,14 +181,11 @@ class RAGRetriever:
             
         real_context = "\n".join(context_parts)
         
-        debug_wrapper = (
-            f"--- DEBUG START ---\n"
-            f"Search found {num_results} results.\n"
-            f"The generated context is:\n"
-            f"vvvvvvvvvvvvvvvvvvvv\n"
-            f"{real_context}\n"
-            f"^^^^^^^^^^^^^^^^^^^^\n"
-            f"--- DEBUG END ---\n"
-        )
-        
-        return debug_wrapper
+        formatted_output = []
+        for i, result in enumerate(results):
+            formatted_output.append(f"--- 참고 문서 {i+1} ---")
+            formatted_output.append(f"문서 제목: {result.source}")
+            formatted_output.append(f"관련 내용: {result.content}")
+            formatted_output.append("") # Add a blank line for readability
+
+        return "\n".join(formatted_output)

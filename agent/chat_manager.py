@@ -121,6 +121,7 @@ class ChatManager:
 
         requested_doc_id = self._extract_doc_id_from_message(message)
         policy_context = await self.retriever.get_context(message, doc_id=requested_doc_id)
+        print(f"--- 참조된 문서 ---\n{policy_context}")
         chat_history = self._format_chat_history(state.messages)
         
         retrieved_doc_id = self._extract_doc_id_from_context(policy_context)
@@ -172,6 +173,7 @@ class ChatManager:
 
         full_conversation_text = "\n".join([m.content for m in state.messages])
         policy_context = await self.retriever.get_context(full_conversation_text, doc_id=requested_doc_id)
+        print(f"--- 참조된 문서 ---\n{policy_context}")
         
         retrieved_doc_id = self._extract_doc_id_from_context(policy_context)
 

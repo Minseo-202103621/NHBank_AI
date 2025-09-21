@@ -4,6 +4,8 @@ import { Modal, Button, ButtonGroup } from 'react-bootstrap';
 import './Chat.css';
 import nhLogo from '../assets/nh_logo.png';
 import attachLogo from '../assets/attach_logo.png';
+import { RiChatSmile2Line, RiSettings3Line, RiQuestionLine, RiMessage2Line } from 'react-icons/ri';
+import ReactMarkdown from 'react-markdown';
 
 // 메시지 타입을 정의합니다.
 interface Message {
@@ -11,7 +13,7 @@ interface Message {
   text: string;
 }
 
-// API 응답 타입을 정의합니다.
+// API 응답 타입을 정의합니다. 
 interface JudgeResponse {
   violation_type: string[];
   severity: number;
@@ -158,14 +160,12 @@ ${links.map(link => `  - [${link.title}](${link.url})`).join('\n')}`;
           console.error("Failed to parse policy_links", e);
       }
 
-      const resultText = `
-        **AI 판정 결과:**
-        - **위반 유형:** ${result.violation_type.join(', ')}
-        - **심각도:** ${result.severity_label}
-        - **판단 근거:** ${result.rationale}
-        - **권고 조치:** ${result.recommended_actions.join(', ')}
-        ${policyLinksText}
-      `;
+      const resultText = `**AI 판정 결과:**
+- **위반 유형:** ${result.violation_type.join(', ')}
+- **심각도:** ${result.severity_label}
+- **판단 근거:** ${result.rationale}
+- **권고 조치:** ${result.recommended_actions.join(', ')}
+${policyLinksText}`;
 
       setMessages(prev => [...prev, { sender: 'bot', text: resultText }]);
       setIsReadyForJudgment(false);
@@ -215,7 +215,7 @@ ${links.map(link => `  - [${link.title}](${link.url})`).join('\n')}`;
       {/* Topbar (glass) */}
       <div className="topbar d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center gap-2">
-          <img src={nhLogo} alt="Bank Whistle AI Logo" style={{ width: 40, height: 40, position: 'relative', top: '-2px' }} />
+          <img src={nhLogo} alt="Bank Whistle AI Logo" style={{ height: 40, position: 'relative', top: '-2px' }} />
           <span className="bold">Bank Whistle AI</span>
         </div>
 
@@ -226,24 +226,30 @@ ${links.map(link => `  - [${link.title}](${link.url})`).join('\n')}`;
       <div className="chat-layout">
         {/* Sidebar */}
         <aside className="sidebar">
-          <button className="nav-btn">
-            <span style={{ display: "inline-block", width: 10, height: 10, background: "var(--g-700)", borderRadius: 999, marginRight: 8 }} />
-            AI Chat Helper
+          <button className="nav-btn" style={{display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent'}}>
+            <RiChatSmile2Line size={20} />
+            <span>AI Chat Helper</span>
           </button>
 
           <div className="hr"></div>
 
-          <div className="text-sm bold" style={{ color: "#6b6b6b" }}>Recents</div>
-          <ul className="recents" style={{ margin: "8px 0 0 0", padding: 0 }}>
-            <li>내부지침 문의 요약</li>
-            <li>부서배치 관련 상담</li>
-            <li>익명성 보장 정책</li>
-            <li>신고접수 절차</li>
+          <div className="text-sm bold" style={{ color: "#6b6b6b", textAlign: 'left', paddingLeft: '14px' }}>Recents</div>
+          <ul className="recents" style={{ margin: "8px 0 0 0", padding: 0, textAlign: 'left' }}>
+            <li><RiMessage2Line size={18} style={{ flexShrink: 0, color: 'var(--g-700)' }} /><span>내부지침 문의 요약</span></li>
+            <li><RiMessage2Line size={18} style={{ flexShrink: 0, color: 'var(--g-700)' }} /><span>부서배치 관련 상담</span></li>
+            <li><RiMessage2Line size={18} style={{ flexShrink: 0, color: 'var(--g-700)' }} /><span>익명성 보장 정책</span></li>
+            <li><RiMessage2Line size={18} style={{ flexShrink: 0, color: 'var(--g-700)' }} /><span>신고접수 절차</span></li>
           </ul>
 
           <div className="hr"></div>
-          <button className="nav-btn" onClick={handleShowSettings}>⚙️ Settings</button>
-          <button className="nav-btn" onClick={handleShowHelp}>❓ Help</button>
+          <button className="nav-btn" onClick={handleShowSettings} style={{display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent'}}>
+            <RiSettings3Line size={20} />
+            <span>설정</span>
+            </button>
+          <button className="nav-btn" onClick={handleShowHelp} style={{display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent'}}>
+            <RiQuestionLine size={20} />
+            <span>도움말</span>
+            </button>
         </aside>
 
         {/* Main */}
@@ -251,7 +257,7 @@ ${links.map(link => `  - [${link.title}](${link.url})`).join('\n')}`;
           {/* Header row inside card */}
           <div className="d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center gap-3">
-               <img src={nhLogo} alt="Bank Whistle AI Logo" style={{ width: 44, height: 40 }} />
+               <img src={nhLogo} alt="Bank Whistle AI Logo" style={{ height: 40 }} />
               <div className="text-sm">
                 <div className="bold">Bank Whistle AI</div>
                 <div style={{ color: "#6b6b6b" }}>NH 환경에 맞춘 안전한 내부고발 상담</div>
@@ -265,11 +271,11 @@ ${links.map(link => `  - [${link.title}](${link.url})`).join('\n')}`;
             {messages.map((m, i) => (
               <div key={i} className={`msg-row ${m.sender}`}>
                 <div className={`bubble ${m.sender}`}>
-                   {m.sender === 'bot' ? (
-                      <span dangerouslySetInnerHTML={{ __html: m.text.replace(/\n/g, '<br />') }} />
-                    ) : (
-                      m.text
-                    )}
+                  {m.sender === 'bot' ? (
+                    <span dangerouslySetInnerHTML={{ __html: m.text.replace(/\n/g, '<br />') }} />
+                  ) : (
+                    <ReactMarkdown>{m.text}</ReactMarkdown>
+                  )}
                 </div>
               </div>
             ))}
